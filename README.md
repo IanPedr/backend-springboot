@@ -57,7 +57,7 @@ Git para clonar o repositório
 
 Passos:
 # Clonar o repositório
-git clone https://github.com/seu-usuario/seu-repositorio.git
+git clone https://github.com/IanPedr/backend-springboot/tree/main
 
 # Entrar na pasta do projeto
 cd seu-repositorio
