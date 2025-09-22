@@ -13,6 +13,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -43,7 +44,7 @@ public class EventService {
         return newEvent;
     }
     private String uploadImg(MultipartFile multipartFile){
-        String imgName = UUID.randomUUID() + "-" + multipartFile.getOriginalFilename();
+        String filename = UUID.randomUUID() + "-" + multipartFile.getOriginalFilename();
 
         try{
             File file = this.convertMultipartToFile(multipartFile);
@@ -57,7 +58,7 @@ public class EventService {
     }
 
     private File convertMultipartToFile(MultipartFile multipartFile) throws IOException {
-        File convFile = new File(multipartFile.getOriginalFilename());
+        File convFile = new File(Objects.requireNonNull(multipartFile.getOriginalFilename()));
         FileOutputStream fos = new FileOutputStream(convFile);
         fos.write(multipartFile.getBytes());
         fos.close();
