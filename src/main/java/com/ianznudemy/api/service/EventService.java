@@ -3,8 +3,13 @@ package com.ianznudemy.api.service;
 import com.amazonaws.services.s3.AmazonS3;
 import com.ianznudemy.api.domain.event.Event;
 import com.ianznudemy.api.domain.event.EventRequestDTO;
+import com.ianznudemy.api.domain.event.EventResponseDTO;
+import com.ianznudemy.api.repositories.EventRepository;
 import lombok.Value;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -13,6 +18,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -21,6 +27,9 @@ public class EventService {
 
     @Value("${aws.bucket.name}")
     private String bucketName;
+
+    @Autowired
+    private EventRepository repository;
 
     @Autowired
     private AmazonS3 s3Client;
@@ -40,9 +49,23 @@ public class EventService {
         newEvent.setEventUrl(data.eventUrl());
         newEvent.setDate(new Date(data.date()));
         newEvent.setImgUrl(imgUrl);
+        newEvent.setRemote(data.remote());
+
+        repository.save(newEvent);
 
         return newEvent;
     }
+
+    public List<EventResponseDTO> getEvents(int page, int size){
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Event> eventsPage = this.repository.findAll(pageable);
+        return eventsPage.map(event -> new EventResponseDTO(event.getId(), event.getTitle(), event.getDescription(), event.getDate(), event.getRemote(), event.getEventUrl(), event.getImgUrl())
+
+        )
+                .stream().toList();
+    }
+
+
     private String uploadImg(MultipartFile multipartFile){
         String filename = UUID.randomUUID() + "-" + multipartFile.getOriginalFilename();
 
@@ -53,7 +76,7 @@ public class EventService {
             return s3Client.getUrl(bucketName, filename).toString();
         } catch(Exception e){
             System.out.println("Erro ao subir o arquivo");
-            return null;
+            return "";
         }
     }
 
